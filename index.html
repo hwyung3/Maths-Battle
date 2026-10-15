@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>孩子與父母的數學大對決</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background-color: #2dd4bf;
+            touch-action: none; /* Prevent double-tap zoom etc */
+        }
+
+        /* Isometric / 3D Button Styles */
+        .iso-btn {
+            transition: all 0.1s ease;
+            box-shadow: 0 6px 0 0 rgba(0,0,0,0.2);
+            transform: translateY(0);
+        }
+        
+        .iso-btn:active {
+            box-shadow: 0 0px 0 0 rgba(0,0,0,0.2);
+            transform: translateY(6px);
+        }
+
+        .iso-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.2);
+            transform: translateY(4px);
+        }
+
+        /* Player Areas */
+        .player-zone {
+            height: 50vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Changed to pack items to the start (divider) */
+            align-items: center; /* Horizontally center everything */
+            gap: 1rem; /* Space between HP and Numpad */
+        }
+
+        #zone-p1 {
+            background-color: #fef08a; /* Cat theme - Yellow */
+            transform: rotate(180deg);
+        }
+
+        #zone-p2 {
+            background-color: #fbcfe8; /* Rabbit theme - Pink */
+        }
+
+        /* Center Dividing Line */
+        .divider {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: repeating-linear-gradient(
+                90deg,
+                #374151,
+                #374151 20px,
+                transparent 20px,
+                transparent 40px
+            );
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        /* Emojis */
+        .emoji-hp {
+            font-size: 2rem;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        /* Animations */
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; filter: brightness(1) drop-shadow(0 0 0 red); }
+            50% { transform: scale(2.5); opacity: 1; filter: brightness(2) drop-shadow(0 0 15px red); }
+            100% { transform: scale(3) rotate(45deg); opacity: 0; filter: brightness(3); display: none; }
+        }
+
+        .anim-explode {
+            animation: explode 0.5s forwards;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .anim-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        /* Overlay */
+        .overlay {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Freeze overlay */
+        .freeze-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .freeze-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Music Control Button */
+        #music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 3px solid #374151;
+            box-shadow: 0 4px 0 0 rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        #music-control:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 0 rgba(0,0,0,0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Music Control Button -->
+<button id="music-control" onclick="toggleMusic()">
+    🎵
+</button>
+
+<div id="app" class="relative w-full h-screen">
+
+    <!-- Pre-game / Start Screen -->
+    <div id="start-screen" class="overlay absolute inset-0 z-50 flex flex-col items-center justify-center p-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-8 drop-shadow-md">孩子與父母的數學大對決</h1>
+        
+        <div class="flex flex-col md:flex-row gap-8 w-full max-w-4xl justify-center mb-8">
+            <!-- Player 1 Setup -->
+            <div class="bg-yellow-100 p-6 rounded-3xl border-4 border-yellow-400 shadow-xl flex-1 transform rotate-0 md:rotate-0">
+                <div class="text-6xl mb-2">🐱</div>
+                <h2 class="text-2xl font-bold text-yellow-800 mb-4">玩家一 (貓咪)</h2>
+                <label class="block text-left font-semibold mb-2 text-gray-700">選擇難度:</label>
+                <select id="diff-p1" class="w-full p-3 rounded-xl border-2 border-yellow-300 text-lg bg-white focus:outline-none focus:border-yellow-500">
+                    <option value="bb">BB級 (10以內加減)</option>
+                    <option value="basic">基礎 (20以内加減不包含進退位)</option>
+                    <option value="easy" selected>簡單 (20以內加減包含進退位)</option>
+                    <option value="normal">基本 (100以內加減包含進退位)</option>
+                    <option value="hard">困難 (100-1000加減)</option>
+                    <option value="challenge">挑戰 (100-100000加減)</option>
+                </select>
+            </div>
+
+            <!-- Player 2 Setup -->
+            <div class="bg-pink-100 p-6 rounded-3xl border-4 border-pink-400 shadow-xl flex-1">
+                <div class="text-6xl mb-2">🐰</div>
+                <h2 class="text-2xl font-bold text-pink-800 mb-4">玩家二 (兔子)</h2>
+                <label class="block text-left font-semibold mb-2 text-gray-700">選擇難度:</label>
+                <select id="diff-p2" class="w-full p-3 rounded-xl border-2 border-pink-300 text-lg bg-white focus:outline-none focus:border-pink-500">
+                    <option value="bb">BB級 (10以內加減)</option>
+                    <option value="basic">基礎 (20以内加減不包含進退位)</option>
+                    <option value="easy" selected>簡單 (20以內加減包含進退位)</option>
+                    <option value="normal">基本 (100以內加減包含進退位)</option>
+                    <option value="hard">困難 (100-1000加減)</option>
+                    <option value="challenge">挑戰 (100-100000加減)</option>
+                </select>
+            </div>
+        </div>
+
+        <button onclick="startGame()" class="iso-btn bg-green-500 text-white text-3xl font-bold py-4 px-12 rounded-full border-4 border-green-600">
+            開始遊戲
+        </button>
+    </div>
+
+    <!-- Game Board -->
+    <div id="game-board" class="w-full h-full flex flex-col hidden">
+        
+        <!-- Player 1 Zone (Top, Rotated) -->
+        <div id="zone-p1" class="player-zone pt-8 pb-2 px-4">
+            <div id="freeze-p1" class="freeze-overlay">答錯了！暫停3秒...</div>
+            
+            <!-- HP Area (Front of zone, closest to divider due to 180deg rotation) -->
+            <div class="flex justify-center gap-1 flex-wrap px-2 w-full" id="hp-p1">
+                <!-- Emojis injected by JS -->
+            </div>
+
+            <!-- Question & Input Area -->
+            <div class="flex flex-col items-center w-full">
+                <div class="bg-white/80 rounded-2xl p-3 w-full max-w-sm shadow-lg mb-2 text-center border-4 border-yellow-300">
+                    <div id="q-p1" class="text-4xl font-bold text-gray-800 mb-2">? + ?</div>
+                    <div id="ans-p1" class="text-3xl font-semibold text-blue-600 h-10 bg-yellow-50 rounded-lg flex items-center justify-center border-2 border-yellow-200"></div>
+                </div>
+
+                <!-- Numpad -->
+                <div class="grid grid-cols-3 gap-2 w-full max-w-sm">
+                    <button onclick="inputNum('p1', 1)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">1</button>
+                    <button onclick="inputNum('p1', 2)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">2</button>
+                    <button onclick="inputNum('p1', 3)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">3</button>
+                    <button onclick="inputNum('p1', 4)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">4</button>
+                    <button onclick="inputNum('p1', 5)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">5</button>
+                    <button onclick="inputNum('p1', 6)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">6</button>
+                    <button onclick="inputNum('p1', 7)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">7</button>
+                    <button onclick="inputNum('p1', 8)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">8</button>
+                    <button onclick="inputNum('p1', 9)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">9</button>
+                    <button onclick="clearNum('p1')" class="iso-btn bg-red-400 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-red-600">重置</button>
+                    <button onclick="inputNum('p1', 0)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">0</button>
+                    <button onclick="submitNum('p1')" class="iso-btn bg-green-500 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-green-700">確定</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Player 2 Zone (Bottom, Normal) -->
+        <div id="zone-p2" class="player-zone pt-8 pb-2 px-4">
+            <!-- HP Area (Front of zone, closest to divider) -->
+            <div class="flex justify-center gap-1 flex-wrap px-2 w-full" id="hp-p2">
+                 <!-- Emojis injected by JS -->
+            </div>
+
+            <!-- Question & Input Area -->
+            <div class="flex flex-col items-center w-full">
+                <div class="bg-white/80 rounded-2xl p-3 w-full max-w-sm shadow-lg mb-2 text-center border-4 border-pink-300">
+                    <div id="q-p2" class="text-4xl font-bold text-gray-800 mb-2">? - ?</div>
+                    <div id="ans-p2" class="text-3xl font-semibold text-blue-600 h-10 bg-pink-50 rounded-lg flex items-center justify-center border-2 border-pink-200"></div>
+                </div>
+
+                <!-- Numpad -->
+                <div class="grid grid-cols-3 gap-2 w-full max-w-sm">
+                    <button onclick="inputNum('p2', 1)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">1</button>
+                    <button onclick="inputNum('p2', 2)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">2</button>
+                    <button onclick="inputNum('p2', 3)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">3</button>
+                    <button onclick="inputNum('p2', 4)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">4</button>
+                    <button onclick="inputNum('p2', 5)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">5</button>
+                    <button onclick="inputNum('p2', 6)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">6</button>
+                    <button onclick="inputNum('p2', 7)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">7</button>
+                    <button onclick="inputNum('p2', 8)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">8</button>
+                    <button onclick="inputNum('p2', 9)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">9</button>
+                    <button onclick="clearNum('p2')" class="iso-btn bg-red-400 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-red-600">重置</button>
+                    <button onclick="inputNum('p2', 0)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">0</button>
+                    <button onclick="submitNum('p2')" class="iso-btn bg-green-500 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-green-700">確定</button>
+                </div>
+            </div>
+
+            <div id="freeze-p2" class="freeze-overlay">答錯了！暫停3秒...</div>
+        </div>
+
+    </div>
+
+    <!-- Victory Screen -->
+    <div id="victory-screen" class="overlay absolute inset-0 z-50 flex flex-col items-center justify-center p-4 text-center hidden">
+        <h1 class="text-6xl font-bold text-yellow-500 mb-4 drop-shadow-lg" id="winner-text">恭喜贏家！</h1>
+        <div class="text-9xl mb-8" id="winner-emoji">🏆</div>
+        <button onclick="resetGame()" class="iso-btn bg-blue-500 text-white text-3xl font-bold py-4 px-12 rounded-full border-4 border-blue-600">
+            重新開始
+        </button>
+    </div>
+
+</div>
+
+<script>
+    // --- Web Audio API Synth Setup ---
+    let audioCtx = null;
+    let isMusicPlaying = false;
+    let bgmIsPlaying = false;
+    let nextNoteTime = 0;
+    let currentNoteIndex = 0;
+    let lookahead = 25.0; // ms
+    let scheduleAheadTime = 0.1; // s
+    let timerID = null;
+
+    // Simple cheerful 8-bit melody
+    const melody = [
+        { note: 261.63, duration: 0.25 }, // C4
+        { note: 329.63, duration: 0.25 }, // E4
+        { note: 392.00, duration: 0.25 }, // G4
+        { note: 523.25, duration: 0.5 },  // C5
+        { note: 392.00, duration: 0.25 }, // G4
+        { note: 329.63, duration: 0.5 },  // E4
+        { note: 349.23, duration: 0.25 }, // F4
+        { note: 440.00, duration: 0.25 }, // A4
+        { note: 523.25, duration: 0.25 }, // C5
+        { note: 698.46, duration: 0.5 },  // F5
+        { note: 523.25, duration: 0.25 }, // C5
+        { note: 440.00, duration: 0.5 }   // A4
+    ];
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    // --- Procedural BGM Scheduler ---
+    function nextNote() {
+        const secondsPerBeat = melody[currentNoteIndex].duration;
+        nextNoteTime += secondsPerBeat;
+        currentNoteIndex++;
+        if (currentNoteIndex >= melody.length) {
+            currentNoteIndex = 0;
+        }
+    }
+
+    function scheduleNote(freq, time, duration) {
+        if (!bgmIsPlaying) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square'; // 8-bit sound
+        osc.frequency.value = freq;
+        
+        gain.gain.setValueAtTime(0.02, time); // Keep volume low
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration - 0.05);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function scheduler() {
+        while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+            scheduleNote(melody[currentNoteIndex].note, nextNoteTime, melody[currentNoteIndex].duration);
+            nextNote();
+        }
+        if (bgmIsPlaying) {
+            timerID = setTimeout(scheduler, lookahead);
+        }
+    }
+
+    // --- BGM Control ---
+    function stopMusic() {
+        bgmIsPlaying = false;
+        isMusicPlaying = false;
+        clearTimeout(timerID);
+        const musicBtn = document.getElementById('music-control');
+        musicBtn.innerText = '🔇';
+        musicBtn.classList.add('bg-gray-300');
+        musicBtn.classList.remove('bg-white');
+    }
+
+    function startBGM() {
+        if (bgmIsPlaying) return;
+        initAudio();
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        bgmIsPlaying = true;
+        isMusicPlaying = true;
+        nextNoteTime = audioCtx.currentTime + 0.1;
+        currentNoteIndex = 0;
+        scheduler();
+        
+        const musicBtn = document.getElementById('music-control');
+        musicBtn.innerText = '🎵';
+        musicBtn.classList.remove('bg-gray-300');
+        musicBtn.classList.add('bg-white');
+    }
+
+    function toggleMusic() {
+        if (isMusicPlaying) {
+            stopMusic();
+        } else {
+            startBGM();
+        }
+    }
+
+    // Requested reversed logic: play positive sound for WRONG answers
+    function playPositiveChime() {
+        if (!audioCtx) return;
+        const time = audioCtx.currentTime;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        
+        osc.frequency.setValueAtTime(523.25, time); // C5
+        osc.frequency.setValueAtTime(659.25, time + 0.1); // E5
+        
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.5, time + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(time);
+        osc.stop(time + 0.5);
+    }
+
+    // Requested reversed logic: play negative sound for CORRECT answers
+    function playErrorBuzz() {
+        if (!audioCtx) return;
+        const time = audioCtx.currentTime;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        
+        osc.frequency.setValueAtTime(150, time);
+        osc.frequency.linearRampToValueAtTime(100, time + 0.2);
+        
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.5, time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(time);
+        osc.stop(time + 0.3);
+    }
+
+    function playExplosion() {
+        if (!audioCtx) return;
+        const time = audioCtx.currentTime;
+        const duration = 0.5;
+        
+        const bufferSize = audioCtx.sampleRate * duration;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1000, time);
+        filter.frequency.exponentialRampToValueAtTime(100, time + duration);
+        
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(1, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        noise.start(time);
+    }
+
+    function playWinSound() {
+        if (!audioCtx) return;
+        const time = audioCtx.currentTime;
+        const notes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
+        
+        notes.forEach((freq, index) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            
+            const noteTime = time + (index * 0.15);
+            
+            osc.frequency.setValueAtTime(freq, noteTime);
+            
+            gain.gain.setValueAtTime(0, noteTime);
+            gain.gain.linearRampToValueAtTime(0.3, noteTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, noteTime + 0.4);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(noteTime);
+            osc.stop(noteTime + 0.5);
+        });
+    }
+
+    // --- Game Logic ---
+    let players = {
+        p1: { emoji: '🐱', hp: 10, answer: '', targetAnswer: 0, diff: 'easy', frozen: false },
+        p2: { emoji: '🐰', hp: 10, answer: '', targetAnswer: 0, diff: 'easy', frozen: false }
+    };
+    let gameActive = false;
+
+    // Math Generation Helpers
+    function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateMath(difficulty) {
+        let a, b, op, result;
+        let isAdd = Math.random() > 0.5;
+
+        while (true) {
+            if (difficulty === 'bb') {
+                // <= 10
+                if (isAdd) {
+                    a = randInt(1, 9); b = randInt(1, 9);
+                    if (a + b <= 10) { op = '+'; result = a + b; break; }
+                } else {
+                    a = randInt(2, 10); b = randInt(1, a - 1);
+                    op = '-'; result = a - b; break;
+                }
+            } else if (difficulty === 'basic') {
+                // <= 20, no carry/borrow
+                if (isAdd) {
+                    a = randInt(1, 18);
+                    b = randInt(1, 9);
+                    if ((a % 10) + (b % 10) < 10 && a + b <= 20) {
+                        op = '+'; result = a + b; break;
+                    }
+                } else {
+                    a = randInt(10, 19);
+                    b = randInt(1, 9);
+                    if ((a % 10) >= (b % 10) && a - b >= 0) {
+                        op = '-'; result = a - b; break;
+                    }
+                }
+            } else if (difficulty === 'easy') {
+                // <= 20, with carry/borrow allowed
+                if (isAdd) {
+                    a = randInt(1, 19); b = randInt(1, 19);
+                    if (a + b <= 20) { op = '+'; result = a + b; break; }
+                } else {
+                    a = randInt(2, 20); b = randInt(1, a - 1);
+                    op = '-'; result = a - b; break;
+                }
+            } else if (difficulty === 'normal') {
+                // <= 100
+                if (isAdd) {
+                    a = randInt(1, 99); b = randInt(1, 99);
+                    if (a + b <= 100) { op = '+'; result = a + b; break; }
+                } else {
+                    a = randInt(2, 100); b = randInt(1, a - 1);
+                    op = '-'; result = a - b; break;
+                }
+            } else if (difficulty === 'hard') {
+                // 100 - 1000
+                if (isAdd) {
+                    a = randInt(100, 899); b = randInt(100, 899);
+                    if (a + b <= 1000) { op = '+'; result = a + b; break; }
+                } else {
+                    a = randInt(200, 1000); b = randInt(100, a - 1);
+                    op = '-'; result = a - b; break;
+                }
+            } else if (difficulty === 'challenge') {
+                // 100 - 100000
+                if (isAdd) {
+                    a = randInt(100, 89999); b = randInt(100, 89999);
+                    if (a + b <= 100000) { op = '+'; result = a + b; break; }
+                } else {
+                    a = randInt(200, 100000); b = randInt(100, a - 1);
+                    op = '-'; result = a - b; break;
+                }
+            }
+        }
+        return { text: `${a} ${op} ${b}`, ans: result };
+    }
+
+    function setQuestion(pId) {
+        let q = generateMath(players[pId].diff);
+        players[pId].targetAnswer = q.ans;
+        players[pId].answer = '';
+        document.getElementById(`q-${pId}`).innerText = q.text;
+        document.getElementById(`ans-${pId}`).innerText = '';
+    }
+
+    function renderHP(pId) {
+        const hpContainer = document.getElementById(`hp-${pId}`);
+        hpContainer.innerHTML = '';
+        for (let i = 0; i < players[pId].hp; i++) {
+            let span = document.createElement('span');
+            span.className = 'emoji-hp';
+            span.innerText = players[pId].emoji;
+            hpContainer.appendChild(span);
+        }
+    }
+
+    function damageOpponent(victimId) {
+        if (players[victimId].hp > 0) {
+            players[victimId].hp--;
+            const hpContainer = document.getElementById(`hp-${victimId}`);
+            if (hpContainer.lastChild) {
+                const targetEmoji = hpContainer.lastChild;
+                targetEmoji.classList.add('anim-explode');
+                setTimeout(() => {
+                    if (hpContainer.contains(targetEmoji)) {
+                        hpContainer.removeChild(targetEmoji);
+                    }
+                    checkWin();
+                }, 500); // match animation duration
+            }
+        }
+    }
+
+    function checkWin() {
+        if (players.p1.hp <= 0) endGame('p2', '玩家二 (兔子)');
+        else if (players.p2.hp <= 0) endGame('p1', '玩家一 (貓咪)');
+    }
+
+    // --- Input Handling ---
+    function inputNum(pId, num) {
+        if (!gameActive || players[pId].frozen) return;
+        
+        // Prevent answer from getting too long (max 6 digits for challenge mode)
+        if (players[pId].answer.length < 6) {
+            players[pId].answer += num.toString();
+            document.getElementById(`ans-${pId}`).innerText = players[pId].answer;
+        }
+    }
+
+    function clearNum(pId) {
+        if (!gameActive || players[pId].frozen) return;
+        players[pId].answer = '';
+        document.getElementById(`ans-${pId}`).innerText = '';
+    }
+
+    function submitNum(pId) {
+        if (!gameActive || players[pId].frozen || players[pId].answer === '') return;
+
+        const val = parseInt(players[pId].answer, 10);
+        
+        if (val === players[pId].targetAnswer) {
+            // Correct Answer logic
+            // User requested REVERSED audio: wrong buzz for correct answer + explosion
+            playErrorBuzz();
+            setTimeout(playExplosion, 150);
+            
+            const opponent = pId === 'p1' ? 'p2' : 'p1';
+            damageOpponent(opponent);
+            
+            // Visual feedback on answer box
+            const ansBox = document.getElementById(`ans-${pId}`).parentElement;
+            ansBox.classList.add('bg-green-100');
+            setTimeout(() => ansBox.classList.remove('bg-green-100'), 200);
+
+            setQuestion(pId);
+        } else {
+            // Wrong Answer logic
+            // User requested REVERSED audio: positive chime for wrong answer
+            playPositiveChime();
+            
+            const ansBox = document.getElementById(`ans-${pId}`).parentElement;
+            ansBox.classList.add('anim-shake', 'bg-red-100');
+            setTimeout(() => ansBox.classList.remove('anim-shake', 'bg-red-100'), 300);
+            
+            freezePlayer(pId);
+        }
+    }
+
+    function freezePlayer(pId) {
+        players[pId].frozen = true;
+        document.getElementById(`freeze-${pId}`).classList.add('active');
+        clearNum(pId);
+        
+        setTimeout(() => {
+            if (!gameActive) return;
+            players[pId].frozen = false;
+            document.getElementById(`freeze-${pId}`).classList.remove('active');
+            setQuestion(pId); // new question after penalty
+        }, 3000);
+    }
+
+    // --- Game Flow ---
+    function startGame() {
+        initAudio();
+        startBGM();
+        
+        players.p1.diff = document.getElementById('diff-p1').value;
+        players.p2.diff = document.getElementById('diff-p2').value;
+        
+        players.p1.hp = 10;
+        players.p2.hp = 10;
+        players.p1.frozen = false;
+        players.p2.frozen = false;
+        
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-board').classList.remove('hidden');
+        document.getElementById('freeze-p1').classList.remove('active');
+        document.getElementById('freeze-p2').classList.remove('active');
+        
+        renderHP('p1');
+        renderHP('p2');
+        setQuestion('p1');
+        setQuestion('p2');
+        
+        gameActive = true;
+    }
+
+    function endGame(winnerId, winnerName) {
+        gameActive = false;
+        playWinSound();
+        
+        const vicScreen = document.getElementById('victory-screen');
+        vicScreen.classList.remove('hidden');
+        
+        document.getElementById('winner-text').innerText = `恭喜 ${winnerName} 獲勝！`;
+        document.getElementById('winner-emoji').innerText = players[winnerId].emoji;
+    }
+
+    function resetGame() {
+        document.getElementById('victory-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('game-board').classList.add('hidden');
+        
+        // Reset and stop music when going back to menu
+        stopMusic();
+    }
+
+</script>
+</body>
+</html>
