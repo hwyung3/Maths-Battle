@@ -23,7 +23,7 @@
             transform: translateY(0);
         }
         
-        .iso-btn:active {
+        .iso-btn:active, .iso-btn.active-press {
             box-shadow: 0 0px 0 0 rgba(0,0,0,0.2);
             transform: translateY(6px);
         }
@@ -228,18 +228,18 @@
 
                 <!-- Numpad -->
                 <div class="grid grid-cols-3 gap-2 w-full max-w-sm">
-                    <button onclick="inputNum('p1', 1)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">1</button>
-                    <button onclick="inputNum('p1', 2)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">2</button>
-                    <button onclick="inputNum('p1', 3)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">3</button>
-                    <button onclick="inputNum('p1', 4)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">4</button>
-                    <button onclick="inputNum('p1', 5)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">5</button>
-                    <button onclick="inputNum('p1', 6)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">6</button>
-                    <button onclick="inputNum('p1', 7)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">7</button>
-                    <button onclick="inputNum('p1', 8)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">8</button>
-                    <button onclick="inputNum('p1', 9)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">9</button>
-                    <button onclick="clearNum('p1')" class="iso-btn bg-red-400 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-red-600">重置</button>
-                    <button onclick="inputNum('p1', 0)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">0</button>
-                    <button onclick="submitNum('p1')" class="iso-btn bg-green-500 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-green-700">確定</button>
+                    <button data-player="p1" data-action="num" data-val="1" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">1</button>
+                    <button data-player="p1" data-action="num" data-val="2" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">2</button>
+                    <button data-player="p1" data-action="num" data-val="3" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">3</button>
+                    <button data-player="p1" data-action="num" data-val="4" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">4</button>
+                    <button data-player="p1" data-action="num" data-val="5" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">5</button>
+                    <button data-player="p1" data-action="num" data-val="6" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">6</button>
+                    <button data-player="p1" data-action="num" data-val="7" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">7</button>
+                    <button data-player="p1" data-action="num" data-val="8" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">8</button>
+                    <button data-player="p1" data-action="num" data-val="9" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">9</button>
+                    <button data-player="p1" data-action="clear" class="game-btn iso-btn bg-red-400 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-red-600">重置</button>
+                    <button data-player="p1" data-action="num" data-val="0" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">0</button>
+                    <button data-player="p1" data-action="submit" class="game-btn iso-btn bg-green-500 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-green-700">確定</button>
                 </div>
             </div>
         </div>
@@ -262,18 +262,18 @@
 
                 <!-- Numpad -->
                 <div class="grid grid-cols-3 gap-2 w-full max-w-sm">
-                    <button onclick="inputNum('p2', 1)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">1</button>
-                    <button onclick="inputNum('p2', 2)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">2</button>
-                    <button onclick="inputNum('p2', 3)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">3</button>
-                    <button onclick="inputNum('p2', 4)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">4</button>
-                    <button onclick="inputNum('p2', 5)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">5</button>
-                    <button onclick="inputNum('p2', 6)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">6</button>
-                    <button onclick="inputNum('p2', 7)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">7</button>
-                    <button onclick="inputNum('p2', 8)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">8</button>
-                    <button onclick="inputNum('p2', 9)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">9</button>
-                    <button onclick="clearNum('p2')" class="iso-btn bg-red-400 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-red-600">重置</button>
-                    <button onclick="inputNum('p2', 0)" class="iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">0</button>
-                    <button onclick="submitNum('p2')" class="iso-btn bg-green-500 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-green-700">確定</button>
+                    <button data-player="p2" data-action="num" data-val="1" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">1</button>
+                    <button data-player="p2" data-action="num" data-val="2" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">2</button>
+                    <button data-player="p2" data-action="num" data-val="3" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">3</button>
+                    <button data-player="p2" data-action="num" data-val="4" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">4</button>
+                    <button data-player="p2" data-action="num" data-val="5" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">5</button>
+                    <button data-player="p2" data-action="num" data-val="6" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">6</button>
+                    <button data-player="p2" data-action="num" data-val="7" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">7</button>
+                    <button data-player="p2" data-action="num" data-val="8" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">8</button>
+                    <button data-player="p2" data-action="num" data-val="9" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">9</button>
+                    <button data-player="p2" data-action="clear" class="game-btn iso-btn bg-red-400 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-red-600">重置</button>
+                    <button data-player="p2" data-action="num" data-val="0" class="game-btn iso-btn bg-white text-2xl font-bold py-2 rounded-xl border-b-4 border-gray-300 text-gray-700">0</button>
+                    <button data-player="p2" data-action="submit" class="game-btn iso-btn bg-green-500 text-white text-xl font-bold py-2 rounded-xl border-b-4 border-green-700">確定</button>
                 </div>
             </div>
 
@@ -734,6 +734,43 @@
         // Reset and stop music when going back to menu
         stopMusic();
     }
+
+    // --- Multi-Touch Support Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const gameButtons = document.querySelectorAll('.game-btn');
+        
+        function handleGameInteraction(e) {
+            // Prevent default touch behaviors (like zoom/scroll) for true simultaneous multi-touch
+            if (e.type === 'touchstart') {
+                e.preventDefault(); 
+            }
+            e.stopPropagation();
+
+            const btn = e.currentTarget;
+            
+            // Visual feedback (CSS active state fallback for touchstart)
+            btn.classList.add('active-press');
+            setTimeout(() => btn.classList.remove('active-press'), 100);
+
+            const player = btn.getAttribute('data-player');
+            const action = btn.getAttribute('data-action');
+            
+            if (action === 'num') {
+                inputNum(player, parseInt(btn.getAttribute('data-val')));
+            } else if (action === 'clear') {
+                clearNum(player);
+            } else if (action === 'submit') {
+                submitNum(player);
+            }
+        }
+
+        gameButtons.forEach(btn => {
+            // passive: false is required to allow e.preventDefault()
+            btn.addEventListener('touchstart', handleGameInteraction, { passive: false });
+            // Fallback for mouse users (desktop testing)
+            btn.addEventListener('mousedown', handleGameInteraction);
+        });
+    });
 
 </script>
 </body>
