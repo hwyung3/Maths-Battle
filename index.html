@@ -131,12 +131,17 @@
             pointer-events: all;
         }
 
-        /* Music Control Button */
-        #music-control {
+        /* Floating Controls Container (Home & Music) */
+        .floating-btn-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 100;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .floating-btn {
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -150,7 +155,7 @@
             cursor: pointer;
             transition: all 0.1s ease;
         }
-        #music-control:active {
+        .floating-btn:active {
             transform: translateY(4px);
             box-shadow: 0 0px 0 0 rgba(0,0,0,0.2);
         }
@@ -159,20 +164,25 @@
 </head>
 <body>
 
-<!-- Music Control Button -->
-<button id="music-control" onclick="toggleMusic()">
-    🎵
-</button>
+<!-- Floating Controls (Home & Music) -->
+<div class="floating-btn-container">
+    <button id="home-control" class="floating-btn" onclick="goHome()" title="回到開始畫面">
+        🏠
+    </button>
+    <button id="music-control" class="floating-btn" onclick="toggleMusic()" title="音樂開關">
+        🎵
+    </button>
+</div>
 
 <div id="app" class="relative w-full h-screen">
 
     <!-- Pre-game / Start Screen -->
     <div id="start-screen" class="overlay absolute inset-0 z-50 flex flex-col items-center justify-center p-4 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-8 drop-shadow-md">孩子與父母的數學大對決</h1>
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6 drop-shadow-md">孩子與父母的數學大對決</h1>
         
-        <div class="flex flex-col md:flex-row gap-8 w-full max-w-4xl justify-center mb-8">
+        <div class="flex flex-col gap-6 w-full max-w-lg justify-center mb-8">
             <!-- Player 1 Setup -->
-            <div class="bg-yellow-100 p-6 rounded-3xl border-4 border-yellow-400 shadow-xl flex-1 transform rotate-0 md:rotate-0">
+            <div class="bg-yellow-100 p-6 rounded-3xl border-4 border-yellow-400 shadow-xl w-full">
                 <div class="text-6xl mb-2">🐱</div>
                 <h2 class="text-2xl font-bold text-yellow-800 mb-4">玩家一 (貓咪)</h2>
                 <label class="block text-left font-semibold mb-2 text-gray-700">選擇難度:</label>
@@ -187,7 +197,7 @@
             </div>
 
             <!-- Player 2 Setup -->
-            <div class="bg-pink-100 p-6 rounded-3xl border-4 border-pink-400 shadow-xl flex-1">
+            <div class="bg-pink-100 p-6 rounded-3xl border-4 border-pink-400 shadow-xl w-full">
                 <div class="text-6xl mb-2">🐰</div>
                 <h2 class="text-2xl font-bold text-pink-800 mb-4">玩家二 (兔子)</h2>
                 <label class="block text-left font-semibold mb-2 text-gray-700">選擇難度:</label>
@@ -286,7 +296,7 @@
     <div id="victory-screen" class="overlay absolute inset-0 z-50 flex flex-col items-center justify-center p-4 text-center hidden">
         <h1 class="text-6xl font-bold text-yellow-500 mb-4 drop-shadow-lg" id="winner-text">恭喜贏家！</h1>
         <div class="text-9xl mb-8" id="winner-emoji">🏆</div>
-        <button onclick="resetGame()" class="iso-btn bg-blue-500 text-white text-3xl font-bold py-4 px-12 rounded-full border-4 border-blue-600">
+        <button onclick="goHome()" class="iso-btn bg-blue-500 text-white text-3xl font-bold py-4 px-12 rounded-full border-4 border-blue-600">
             重新開始
         </button>
     </div>
@@ -726,7 +736,8 @@
         document.getElementById('winner-emoji').innerText = players[winnerId].emoji;
     }
 
-    function resetGame() {
+    function goHome() {
+        gameActive = false;
         document.getElementById('victory-screen').classList.add('hidden');
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('game-board').classList.add('hidden');
